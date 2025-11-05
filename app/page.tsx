@@ -57,8 +57,8 @@ const INITIAL_FAJR_PRAYER_PHRASES: PrayerPhrase[] = [
     translation_spanish: "En el nombre de Allah, el Compasivo, el Misericordioso",
     translation_per_segment: "En el nombre de Allah|El Compasivo|El Misericordioso",
     video_timestamp: 19,
-    duration: 3.6,
-    highlight_timing: "0.0-1.2|1.2-2.0|2.0-3.6",
+    duration: 3.1,
+    highlight_timing: "0.0-1.2|1.2-1.8|1.8-3.1",
     position_image_names: ["parado_manos_cruzadas.png"],
   },
   {
@@ -70,8 +70,8 @@ const INITIAL_FAJR_PRAYER_PHRASES: PrayerPhrase[] = [
     translation_spanish: "La alabanza pertenece a Allah, Señor de los mundos",
     translation_per_segment: "La alabanza|a Allah|Señor|de los mundos",
     video_timestamp: 22.7,
-    duration: 3.72,
-    highlight_timing: "0.0-0.7|0.7-1.4|1.4-2.2|2.2-3.72",
+    duration: 3.45,
+    highlight_timing: "0.0-0.7|0.7-1.2|1.2-2.0|2.0-3.45",
     position_image_names: ["parado_manos_cruzadas.png"],
   },
   {
@@ -84,7 +84,7 @@ const INITIAL_FAJR_PRAYER_PHRASES: PrayerPhrase[] = [
     translation_per_segment: "El Compasivo|El Misericordioso",
     video_timestamp: 26.43,
     duration: 1.8,
-    highlight_timing: "0.0-1.0|1.0-3.0",
+    highlight_timing: "0.0-1.0|1.0-1.8",
     position_image_names: ["parado_manos_cruzadas.png"],
   },
   {
@@ -96,8 +96,8 @@ const INITIAL_FAJR_PRAYER_PHRASES: PrayerPhrase[] = [
     translation_spanish: "Dueño del Día de la Retribucion",
     translation_per_segment: "Dueño| del Día | de la Retribucion",
     video_timestamp: 28.23,
-    duration: 2.13,
-    highlight_timing: "0.0-0.7|0.7-1.3|1.3-3.0",
+    duration: 2.00,
+    highlight_timing: "0.0-0.4|0.4-1.0|1.0-2.00",
     position_image_names: ["parado_manos_cruzadas.png"],
   },
   {
@@ -110,7 +110,7 @@ const INITIAL_FAJR_PRAYER_PHRASES: PrayerPhrase[] = [
     translation_per_segment: "Solo a Ti | adoramos|y solo en Ti | buscamos ayuda",
     video_timestamp: 30.7,
     duration: 3.3,
-    highlight_timing: "0.0-0.5|0.5-1.0|1.0-2.3|2.3-4.0",
+    highlight_timing: "0.0-0.5|0.5-1.0|1.0-1.5|1.5-3.3",
     position_image_names: ["parado_manos_cruzadas.png"],
   },
   {
@@ -334,45 +334,23 @@ export default function Page() {
   const animationFrameRef = useRef<number | null>(null)
 
   useEffect(() => {
-    const animate = () => {
-      if (audioRef.current) {
-        setCurrentTime(audioRef.current.currentTime)
-        animationFrameRef.current = requestAnimationFrame(animate)
-      }
-    }
-
-    if (isPlaying) {
-      animationFrameRef.current = requestAnimationFrame(animate)
-    } else {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current)
-        animationFrameRef.current = null
-      }
-    }
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current)
-        animationFrameRef.current = null
-      }
-    }
-  }, [isPlaying])
-
-  useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
 
     const setAudioDuration = () => setDuration(audio.duration)
+    const onTimeUpdate = () => setCurrentTime(audio.currentTime)
     const onEnded = () => {
       setIsPlaying(false)
       setActivePhraseId(null)
     }
 
     audio.addEventListener("loadedmetadata", setAudioDuration)
+    audio.addEventListener("timeupdate", onTimeUpdate)
     audio.addEventListener("ended", onEnded)
 
     return () => {
       audio.removeEventListener("loadedmetadata", setAudioDuration)
+      audio.removeEventListener("timeupdate", onTimeUpdate)
       audio.removeEventListener("ended", onEnded)
       if (stopTimeoutRef.current) {
         clearTimeout(stopTimeoutRef.current)
@@ -430,7 +408,9 @@ export default function Page() {
     if (audioRef.current) {
       if (stopTimeoutRef.current) {
         clearTimeout(stopTimeoutRef.current)
+        stopTimeoutRef.current = null
       }
+
       audioRef.current.currentTime = phrase.video_timestamp
 
       const playPromise = audioRef.current.play()
@@ -440,14 +420,20 @@ export default function Page() {
       if (playPromise !== undefined) {
         playPromise
           .then(() => {
-            stopTimeoutRef.current = window.setTimeout(() => {
-              if (audioRef.current) {
-                audioRef.current.pause()
-                setIsPlaying(false)
-                setActivePhraseId(null)
-                stopTimeoutRef.current = null
-              }
-            }, phrase.duration * 1000)
+            const stopTime = (phrase.video_timestamp + phrase.duration) * 1000
+            const timeUntilStop = stopTime - audioRef.current!.currentTime * 1000
+
+            stopTimeoutRef.current = window.setTimeout(
+              () => {
+                if (audioRef.current) {
+                  audioRef.current.pause()
+                  setIsPlaying(false)
+                  setActivePhraseId(null)
+                  stopTimeoutRef.current = null
+                }
+              },
+              Math.max(0, timeUntilStop),
+            )
           })
           .catch((error) => {
             if (error.name !== "AbortError") {
