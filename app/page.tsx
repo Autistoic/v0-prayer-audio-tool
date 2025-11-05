@@ -550,14 +550,14 @@ export default function Page() {
                     <table className="w-full text-sm sm:text-base">
                       <thead>
                         <tr className="border-b-2 border-gray-200 dark:border-slate-600">
-                          <th className="text-left py-2 px-2 font-bold text-gray-700 dark:text-gray-300">Árabe</th>
-                          <th className="text-left py-2 px-2 font-bold text-gray-700 dark:text-gray-300">
-                            Transliteración
+                          <th className="hidden sm:table-cell text-left py-2 px-2 font-bold text-gray-700 dark:text-gray-300">
+                            Árabe
                           </th>
                           <th className="hidden sm:table-cell text-left py-2 px-2 font-bold text-gray-700 dark:text-gray-300">
-                            Fonética
+                            Transliteración
                           </th>
-                          <th className="hidden md:table-cell text-left py-2 px-2 font-bold text-gray-700 dark:text-gray-300">
+                          <th className="text-left py-2 px-2 font-bold text-gray-700 dark:text-gray-300">Fonética</th>
+                          <th className="text-left py-2 px-2 font-bold text-gray-700 dark:text-gray-300">
                             Significado
                           </th>
                         </tr>
@@ -572,16 +572,19 @@ export default function Page() {
                                 : "hover:bg-gray-50 dark:hover:bg-slate-700"
                             }`}
                           >
-                            <td className="py-3 px-2 font-semibold text-blue-900 dark:text-blue-100" dir="rtl">
+                            <td
+                              className="hidden sm:table-cell py-3 px-2 font-semibold text-blue-900 dark:text-blue-100"
+                              dir="rtl"
+                            >
                               {segment}
                             </td>
-                            <td className="py-3 px-2 text-gray-700 dark:text-gray-300 text-xs sm:text-sm">
+                            <td className="hidden sm:table-cell py-3 px-2 text-gray-700 dark:text-gray-300 text-xs sm:text-sm">
                               {transliterationSegments[i] || ""}
                             </td>
-                            <td className="hidden sm:table-cell py-3 px-2 text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
+                            <td className="py-3 px-2 text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
                               {phoneticsSegments[i] || ""}
                             </td>
-                            <td className="hidden md:table-cell py-3 px-2 text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
+                            <td className="py-3 px-2 text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
                               {translationSegments[i] || ""}
                             </td>
                           </tr>
