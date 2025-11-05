@@ -1,0 +1,14 @@
+{
+  "output": "export",
+  "basePath": "/v0-prayer-audio-tool",
+  "assetPrefix": "/v0-prayer-audio-tool/",
+  "eslint": {
+    "ignoreDuringBuilds": true
+  },
+  "typescript": {
+    "ignoreBuildErrors": true
+  },
+  "images": {
+    "unoptimized": true
+  }
+}
